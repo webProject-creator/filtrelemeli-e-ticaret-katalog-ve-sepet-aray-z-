@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Demlik – Kahve ve Mutfak Katalogu</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+/* ---- Renk tokenları: açık ve koyu tema ---- */
+:root{
+--bg:#eef2f1;
+--card:#fff;
+--ink:#ffffff;
+--mute:#ffffff;
+--line:#d3dcdb;
+--acc:#585a61;
+--acc-ink:#fff;
+--ok:#1b7f4b
+}
+@media (prefers-color-scheme:dark){
+:root:not([data-theme="light"]){
+--bg:#e6d5c3;
+--card:#BE925A;
+--ink:#ffffff;
+--mute:#f7f7f7;
+--line:#2a3d41;
+--acc:#3b2a22;
+--acc-ink:#ffffff;
+--ok:#5fd38d}}
+:root[data-theme="dark"]{
+--bg:#0f1b1e;
+--card:#172629;
+--ink:#e8f0ef;
+--mute:#ffffff;
+--line:#ffffff;
+--acc:#7c9bff;
+--acc-ink:#ffffff;
+--ok:#5fd38d
+}
+*{
+box-sizing:border-box
+}
+html{
+scroll-padding-top:env(safe-area-inset-top,0px)
+}
+body{
+margin:0;
+background:var(--bg);
+color:var(--ink);
+font:16px/1.5 "Bricolage Grotesque",system-ui,sans-serif;
+padding-top:env(safe-area-inset-top,0px);
+padding-bottom:env(safe-area-inset-bottom,0px)
+}
+button,input,select{
+font:inherit;
+color:inherit
+}
+:focus-visible{
+outline:3px solid var(--acc);
+outline-offset:2px
+}
+
+/* ---- Üst çubuk: arama + sepet butonu ---- */
+header{
+display:flex;
+gap:12px;
+align-items:center;
+padding:14px 20px;
+border-bottom:1px solid var(--line);
+position:sticky;
+top:env(safe-area-inset-top,0px);
+background:var(--bg);
+z-index:5
+}
+h1{
+    font-size:1.4rem;
+    font-weight:800;
+    margin:0;
+    letter-spacing:-.02em
+}
+#q{
+    flex:1;
+    min-width:0;
+    padding:10px 14px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:var(--card)
+}
+.btn{
+    border:1px solid var(--line);
+    background:var(--card);
+    padding:9px 14px;
+    border-radius:10px;
+    cursor:pointer
+}
+.btn.pri{
+    background:var(--acc);
+    color:var(--acc-ink);
+    border-color:var(--acc);
+    font-weight:600
+}
+#cartBtn b{
+    background:var(--acc);
+    color:var(--acc-ink);
+    border-radius:99px;
+    padding:1px 8px;
+    margin-left:6px
+}
+
+/* ---- Ana yerleşim: sol filtre paneli + sağ ürün alanı ---- */
+.wrap{display:grid;
+    grid-template-columns:260px 1fr;
+    gap:24px;
+    padding:20px;
+    max-width:1200px;
+    margin:auto
+}
+aside{align-self:start;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px
+}
+aside h2{
+    font-size:.95rem;
+    margin:16px 0 8px
+}
+aside h2:first-child{
+    margin-top:0
+}
+label.chk{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    padding:3px 0;
+    cursor:pointer
+}
+.row{
+    display:flex;
+    gap:8px
+}
+.row input{
+    width:100%;
+    padding:8px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:var(--bg)}
+#filterToggle{
+    display:none
+}
+
+/* ---- Sonuç çubuğu: sayaç, aktif filtre etiketleri, sıralama ---- */
+.bar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px
+}
+.chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px
+}
+.chip{
+    background:var(--acc);
+    color:var(--acc-ink);
+    border:0;
+    border-radius:99px;
+    padding:3px 10px;
+    font-size:.85rem;
+    cursor:pointer
+}
+select{
+    padding:8px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:var(--card)
+}
+
+/* ---- Ürün kartları ---- */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+    gap:16px
+}
+.p{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column
+}
+.img{
+    height:120px;
+    display:grid;
+    place-items:center;
+    font-size:3rem
+}
+.pb{
+    padding:12px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    flex:1
+}
+.pb small{
+    color:var(--mute)
+}
+.price{
+    font-weight:800;
+    font-size:1.15rem
+}
+.stock{
+    color:var(--ok);
+    font-size:.85rem
+}
+.stock.no{
+    color:#c0392b
+}
+.pb .btn{
+    margin-top:auto
+}
+.empty{
+    padding:40px;
+    text-align:center;
+    color:var(--mute);
+    border:1px dashed var(--line);
+    border-radius:14px
+}
+
+/* ---- Sepet çekmecesi (sağdan açılır) ---- */
+#drawer{
+    position:fixed;
+    top:0;
+    right:0;
+    bottom:0;
+    width:min(380px,100%);
+    background:var(--card);
+    border-left:1px solid var(--line);
+    transform:translateX(100%);
+    transition:transform .25s;
+    z-index:10;
+    display:flex;
+    flex-direction:column;
+    padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))
+}
+#drawer.open{
+    transform:none
+}
+#items{
+    flex:1;
+    overflow:auto
+}
+.ci{
+    display:grid;
+    grid-template-columns:40px 1fr auto;
+    gap:10px;
+    align-items:center;
+    padding:10px 0;
+    border-bottom:1px solid var(--line)
+}
+.qty{
+    display:flex;
+    align-items:center;
+    gap:6px
+}
+.qty button{
+    width:28px;
+    height:28px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:var(--bg);
+    cursor:pointer
+}
+.tot{
+    display:flex;
+    justify-content:space-between;
+    font-weight:800;
+    font-size:1.2rem;
+    padding:12px 0
+}
+
+@media (max-width:760px){
+ .wrap{
+    grid-template-columns:1fr;
+    padding:14px
+}
+ #filterToggle{
+    display:inline-block
+}
+ aside{
+    display:none
+}
+ aside.show{
+    display:block
+}
+}
+@media (prefers-reduced-motion:reduce){#drawer{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>COFFEE</h1>
+  <input id="q" type="search" placeholder="Ürün ara (ör. espresso)" aria-label="Ürün ara">
+  <button class="btn" id="filterToggle">Filtreler</button>
+  <button class="btn" id="cartBtn" aria-label="Sepeti aç">Sepet<b id="cnt">0</b></button>
+</header>
+
+<div class="wrap">
+  <!-- Filtre paneli: seçenekler JS ile ürün verisinden üretilir -->
+  <aside id="filters">
+    <h2>Kategori</h2><div id="fCat"></div>
+    <h2>Marka</h2><div id="fBrand"></div>
+    <h2>Fiyat (TL)</h2>
+    <div class="row"><input id="pMin" type="number" min="0" placeholder="En az" aria-label="En düşük fiyat"><input id="pMax" type="number" min="0" placeholder="En çok" aria-label="En yüksek fiyat"></div>
+    <h2>Minimum puan</h2>
+    <select id="fRate"><option value="0">Hepsi</option><option value="3">3 ve üzeri</option><option value="4">4 ve üzeri</option><option value="4.5">4,5 ve üzeri</option></select>
+    <h2>Stok</h2>
+    <label class="chk"><input type="checkbox" id="fStock"> Sadece stokta olanlar</label>
+    <p><button class="btn" id="clear">Filtreleri temizle</button></p>
+  </aside>
+
+  <main>
+    <div class="bar">
+      <div><strong id="count"></strong><div class="chips" id="chips"></div></div>
+      <select id="sort" aria-label="Sırala">
+        <option value="def">Önerilen</option><option value="pa">Fiyat: düşükten yükseğe</option>
+        <option value="pd">Fiyat: yüksekten düşüğe</option><option value="rt">En yüksek puan</option><option value="az">A-Z</option>
+      </select>
+    </div>
+    <div class="grid" id="grid"></div>
+  </main>
+</div>
+
+<!-- Sepet çekmecesi -->
+<div id="drawer" role="dialog" aria-label="Sepet">
+  <div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">Sepetin</h2><button class="btn" id="close">Kapat</button></div>
+  <div id="items"></div>
+  <div class="tot"><span>Toplam</span><span id="total">0 TL</span></div>
+  <button class="btn pri" id="checkout">Siparişi tamamla</button>
+</div>
+
+<script>
+/* ---- 1) Veri: gerçek projede bir API'den (fetch) gelir ---- */
+const PRODUCTS=[
+ {id:1,name:"Espresso Makinesi Pro",brand:"Bremo",cat:"Makine",price:12900,rate:4.7,stock:5,emoji:"EM",bg:"#dbe4ff"},
+ {id:2,name:"Filtre Kahve Makinesi",brand:"Bremo",cat:"Makine",price:3450,rate:4.2,stock:12,emoji:"FKM",bg:"#d8f0e6"},
+ {id:3,name:"Elektrikli Kahve Değirmeni",brand:"Kaffa",cat:"Aksesuar",price:1890,rate:4.5,stock:8,emoji:"KD",bg:"#f3e3d3"},
+ {id:4,name:"Manuel Değirmen",brand:"Kaffa",cat:"Aksesuar",price:950,rate:4.1,stock:0,emoji:"MD",bg:"#f3e3d3"},
+ {id:5,name:"Seramik Fincan Seti (6'lı)",brand:"Toprak",cat:"Servis",price:720,rate:4.8,stock:20,emoji:"FS",bg:"#f6dede"},
+ {id:6,name:"French Press 1L",brand:"Toprak",cat:"Demleme",price:540,rate:3.9,stock:15,emoji:"FP",bg:"#e6e0f5"},
+ {id:7,name:"V60 Drip Seti",brand:"Kaffa",cat:"Demleme",price:690,rate:4.6,stock:7,emoji:"DS",bg:"#e6e0f5"},
+ {id:8,name:"Hassas Kahve Terazisi",brand:"Bremo",cat:"Aksesuar",price:1150,rate:4.3,stock:0,emoji:"KT",bg:"#f3e3d3"},
+ {id:9,name:"Süt Köpürtücü",brand:"Bremo",cat:"Aksesuar",price:480,rate:3.7,stock:25,emoji:"SK",bg:"#f3e3d3"},
+ {id:10,name:"Çekirdek Kahve 1kg Etiyopya",brand:"Kaffa",cat:"Kahve",price:620,rate:4.9,stock:30,emoji:"ÇK",bg:"#e9dccb"},
+ {id:11,name:"Çekirdek Kahve 1kg Brezilya",brand:"Kaffa",cat:"Kahve",price:560,rate:4.4,stock:18,emoji:"ÇK",bg:"#e9dccb"},
+ {id:12,name:"Cam Servis Sürahisi",brand:"Toprak",cat:"Servis",price:390,rate:4.0,stock:9,emoji:"SS",bg:"#f6dede"}
+];
+
+/* ---- 2) Durum: filtreler ve sepet tek yerde tutulur ---- */
+const state={q:"",cats:new Set(),brands:new Set(),min:null,max:null,rate:0,stock:false,sort:"def"};
+let cart={}; // {urunId: adet}
+try{cart=JSON.parse(localStorage.getItem("cart")||"{}")}catch(e){cart={}} // depolama boş/yasaksa sorun çıkmasın
+
+const $=id=>document.getElementById(id);
+const tl=n=>n.toLocaleString("tr-TR")+" TL";
+const uniq=k=>[...new Set(PRODUCTS.map(p=>p[k]))].sort((a,b)=>a.localeCompare(b,"tr"));
+
+/* ---- 3) Filtre kutularını üret (kategori ve marka listeleri veriden gelir) ---- */
+function buildChecks(box,key,set){
+  $(box).innerHTML=uniq(key).map(v=>{
+    const n=PRODUCTS.filter(p=>p[key]===v).length; // her seçeneğin yanında ürün sayısı
+    return `<label class="chk"><input type="checkbox" value="${v}"> ${v} <small style="color:var(--mute)">(${n})</small></label>`}).join("");
+  $(box).onchange=e=>{e.target.checked?set.add(e.target.value):set.delete(e.target.value);render()};
+}
+
+/* ---- 4) Filtreleme + sıralama: tüm kurallar burada birleşir ---- */
+function getFiltered(){
+  const q=state.q.trim().toLocaleLowerCase("tr");
+  let list=PRODUCTS.filter(p=>
+    (!q||(p.name+" "+p.brand).toLocaleLowerCase("tr").includes(q)) &&
+    (!state.cats.size||state.cats.has(p.cat)) &&
+    (!state.brands.size||state.brands.has(p.brand)) &&
+    (state.min==null||p.price>=state.min) &&
+    (state.max==null||p.price<=state.max) &&
+    p.rate>=state.rate &&
+    (!state.stock||p.stock>0));
+  const s={pa:(a,b)=>a.price-b.price,pd:(a,b)=>b.price-a.price,rt:(a,b)=>b.rate-a.rate,az:(a,b)=>a.name.localeCompare(b.name,"tr")}[state.sort];
+  return s?list.sort(s):list;
+}
+
+/* ---- 5) Ürün grid'ini ve aktif filtre etiketlerini çiz ---- */
+function render(){
+  const list=getFiltered();
+  $("count").textContent=list.length+" ürün";
+  $("grid").innerHTML=list.length?list.map(p=>`
+    <article class="p"><div class="img" style="background:${p.bg}">${p.emoji}</div>
+    <div class="pb"><small>${p.brand} · ${p.cat}</small><strong>${p.name}</strong>
+    <span>★ ${p.rate.toLocaleString("tr-TR")}</span><span class="price">${tl(p.price)}</span>
+    <span class="stock ${p.stock?"":"no"}">${p.stock?"Stokta ("+p.stock+")":"Tükendi"}</span>
+    <button class="btn pri" data-add="${p.id}" ${p.stock?"":"disabled"}>Sepete ekle</button></div></article>`).join("")
+    :`<div class="empty" style="grid-column:1/-1">Sonuç yok. Filtreleri gevşetmeyi veya temizlemeyi dene.</div>`;
+  // Aktif filtreler: tıklayınca tek tek kaldırılır
+  const chips=[...state.cats].map(v=>["c",v,v]).concat([...state.brands].map(v=>["b",v,v]));
+  if(state.min!=null||state.max!=null)chips.push(["p","",`${state.min??0}–${state.max??"∞"} TL`]);
+  if(state.rate)chips.push(["r","",`★ ${state.rate}+`]);
+  if(state.stock)chips.push(["s","","Stokta"]);
+  $("chips").innerHTML=chips.map(([t,v,l])=>`<button class="chip" data-t="${t}" data-v="${v}">${l} ✕</button>`).join("");
+}
+
+/* ---- 6) Sepet: ekle / adet değiştir / toplam ---- */
+function saveCart(){try{localStorage.setItem("cart",JSON.stringify(cart))}catch(e){}renderCart()}
+function renderCart(){
+  const ids=Object.keys(cart);
+  $("cnt").textContent=ids.reduce((s,i)=>s+cart[i],0);
+  $("items").innerHTML=ids.length?ids.map(i=>{
+    const p=PRODUCTS.find(x=>x.id==i);
+    return `<div class="ci"><span style="font-size:1.8rem">${p.emoji}</span><div><strong>${p.name}</strong><br><small>${tl(p.price)}</small></div>
+    <div class="qty"><button data-q="${i}" data-d="-1" aria-label="Azalt">−</button>${cart[i]}<button data-q="${i}" data-d="1" aria-label="Artır">+</button></div></div>`}).join("")
+    :`<p class="empty">Sepetin boş. Katalogdan ürün ekleyebilirsin.</p>`;
+  $("total").textContent=tl(ids.reduce((s,i)=>s+PRODUCTS.find(x=>x.id==i).price*cart[i],0));
+}
+function change(id,d){
+  const p=PRODUCTS.find(x=>x.id==id);
+  const n=(cart[id]||0)+d;
+  if(n<=0)delete cart[id]; else cart[id]=Math.min(n,p.stock); // stoktan fazlası eklenemez
+  saveCart();
+}
+
+/* ---- 7) Olay bağlama ---- */
+$("q").oninput=e=>{state.q=e.target.value;render()};
+$("pMin").oninput=e=>{state.min=e.target.value===""?null:+e.target.value;render()};
+$("pMax").oninput=e=>{state.max=e.target.value===""?null:+e.target.value;render()};
+$("fRate").onchange=e=>{state.rate=+e.target.value;render()};
+$("fStock").onchange=e=>{state.stock=e.target.checked;render()};
+$("sort").onchange=e=>{state.sort=e.target.value;render()};
+$("grid").onclick=e=>{const b=e.target.closest("[data-add]");if(b){change(b.dataset.add,1);$("drawer").classList.add("open")}};
+$("items").onclick=e=>{const b=e.target.closest("[data-q]");if(b)change(b.dataset.q,+b.dataset.d)};
+$("cartBtn").onclick=()=>$("drawer").classList.add("open");
+$("close").onclick=()=>$("drawer").classList.remove("open");
+$("filterToggle").onclick=()=>$("filters").classList.toggle("show");
+$("checkout").onclick=()=>{if(Object.keys(cart).length){cart={};saveCart();alert("Sipariş alındı (demo).")}};
+// Etiketten tek filtre kaldırma
+$("chips").onclick=e=>{
+  const b=e.target.closest(".chip");if(!b)return;const{t,v}=b.dataset;
+  if(t==="c")state.cats.delete(v);if(t==="b")state.brands.delete(v);
+  if(t==="p"){state.min=state.max=null;$("pMin").value=$("pMax").value=""}
+  if(t==="r"){state.rate=0;$("fRate").value="0"}
+  if(t==="s"){state.stock=false;$("fStock").checked=false}
+  document.querySelectorAll("#fCat input,#fBrand input").forEach(i=>i.checked=state.cats.has(i.value)||state.brands.has(i.value));
+  render();
+};
+$("clear").onclick=()=>{
+  Object.assign(state,{q:"",min:null,max:null,rate:0,stock:false});state.cats.clear();state.brands.clear();
+  document.querySelectorAll("aside input[type=checkbox],aside input[type=number],#q").forEach(i=>{i.checked=false;if(i.type!=="checkbox")i.value=""});
+  $("fRate").value="0";render();
+};
+
+/* ---- 8) Başlat ---- */
+buildChecks("fCat","cat",state.cats);buildChecks("fBrand","brand",state.brands);
+render();renderCart();
+</script>
+</body>
+</html>
