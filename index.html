@@ -344,7 +344,7 @@ select{
 </div>
 
 <script>
-/* ---- 1) Veri: gerçek projede bir API'den (fetch) gelir ---- */
+/* ---- Veri, gerçek projede bir API'den (fetch) gelir ---- */
 const PRODUCTS=[
  {id:1,name:"Espresso Makinesi Pro",brand:"Bremo",cat:"Makine",price:12900,rate:4.7,stock:5,emoji:"EM",bg:"#dbe4ff"},
  {id:2,name:"Filtre Kahve Makinesi",brand:"Bremo",cat:"Makine",price:3450,rate:4.2,stock:12,emoji:"FKM",bg:"#d8f0e6"},
@@ -360,7 +360,7 @@ const PRODUCTS=[
  {id:12,name:"Cam Servis Sürahisi",brand:"Toprak",cat:"Servis",price:390,rate:4.0,stock:9,emoji:"SS",bg:"#f6dede"}
 ];
 
-/* ---- 2) Durum: filtreler ve sepet tek yerde tutulur ---- */
+/* ---- Durum, filtreler ve sepet tek yerde tutulur ---- */
 const state={q:"",cats:new Set(),brands:new Set(),min:null,max:null,rate:0,stock:false,sort:"def"};
 let cart={}; // {urunId: adet}
 try{cart=JSON.parse(localStorage.getItem("cart")||"{}")}catch(e){cart={}} // depolama boş/yasaksa sorun çıkmasın
@@ -369,7 +369,7 @@ const $=id=>document.getElementById(id);
 const tl=n=>n.toLocaleString("tr-TR")+" TL";
 const uniq=k=>[...new Set(PRODUCTS.map(p=>p[k]))].sort((a,b)=>a.localeCompare(b,"tr"));
 
-/* ---- 3) Filtre kutularını üret (kategori ve marka listeleri veriden gelir) ---- */
+/* ---- Filtre kutularını üret (kategori ve marka listeleri veriden gelir) ---- */
 function buildChecks(box,key,set){
   $(box).innerHTML=uniq(key).map(v=>{
     const n=PRODUCTS.filter(p=>p[key]===v).length; // her seçeneğin yanında ürün sayısı
@@ -377,7 +377,7 @@ function buildChecks(box,key,set){
   $(box).onchange=e=>{e.target.checked?set.add(e.target.value):set.delete(e.target.value);render()};
 }
 
-/* ---- 4) Filtreleme + sıralama: tüm kurallar burada birleşir ---- */
+/* ----  Filtreleme + sıralama: tüm kurallar burada birleşir ---- */
 function getFiltered(){
   const q=state.q.trim().toLocaleLowerCase("tr");
   let list=PRODUCTS.filter(p=>
@@ -392,7 +392,7 @@ function getFiltered(){
   return s?list.sort(s):list;
 }
 
-/* ---- 5) Ürün grid'ini ve aktif filtre etiketlerini çiz ---- */
+/* ---- Ürün grid'ini ve aktif filtre etiketlerini çiz ---- */
 function render(){
   const list=getFiltered();
   $("count").textContent=list.length+" ürün";
@@ -411,7 +411,7 @@ function render(){
   $("chips").innerHTML=chips.map(([t,v,l])=>`<button class="chip" data-t="${t}" data-v="${v}">${l} ✕</button>`).join("");
 }
 
-/* ---- 6) Sepet: ekle / adet değiştir / toplam ---- */
+/* ----  ekle / adet değiştir / toplam ---- */
 function saveCart(){try{localStorage.setItem("cart",JSON.stringify(cart))}catch(e){}renderCart()}
 function renderCart(){
   const ids=Object.keys(cart);
@@ -430,7 +430,7 @@ function change(id,d){
   saveCart();
 }
 
-/* ---- 7) Olay bağlama ---- */
+/* ---- Olayı bağlama ---- */
 $("q").oninput=e=>{state.q=e.target.value;render()};
 $("pMin").oninput=e=>{state.min=e.target.value===""?null:+e.target.value;render()};
 $("pMax").oninput=e=>{state.max=e.target.value===""?null:+e.target.value;render()};
@@ -459,7 +459,7 @@ $("clear").onclick=()=>{
   $("fRate").value="0";render();
 };
 
-/* ---- 8) Başlat ---- */
+/* ----  Başlat ---- */
 buildChecks("fCat","cat",state.cats);buildChecks("fBrand","brand",state.brands);
 render();renderCart();
 </script>
